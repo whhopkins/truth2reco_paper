@@ -103,14 +103,6 @@
 
 \section{Action items for editors}
 \begin{itemize}
-\item What $R$-parameter are we using? $R=0.4$ or $R=0.5$? (Sergei)
-\item Sergei and Walter need to check they are doing the same matching of truth and reco jets (what is the $\Delta R$?). (Sergei/Walter)
-\item Need to align parameters of unbinned and binned NNs. (Sergei/Walter)
-  \begin{itemize}
-  \item Why are we using different activation functions (ReLU vs sigmoid) in the hidden layers?
-  \item Why do we have different dimensions for the output 100 vs 200?
-  \item For the unbinned preprocessing, are we removing resolution outliers?
-  \end{itemize}
 \item Fix missing references (Doug).
   \begin{itemize}
   \item ReLU reference?
@@ -125,28 +117,24 @@
   \begin{itemize}
   \item Focus on truth smearing replacement and how this is automated.
   \end{itemize}
-\item Should we add CPU performance comparison?
-  \begin{itemize}
-  \item TruthSmearingFunctions for 1M jets vs our method?
-  \end{itemize}
-\item Should we do a MET and mt comparison?
-  \begin{itemize}
-  \item This really only makes sense within ATLAS.
-  \end{itemize}
+% \item Should we add CPU performance comparison?
+%   \begin{itemize}
+%   \item TruthSmearingFunctions for 1M jets vs our method?
+%   \end{itemize}
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-A cornerstone of particle collision experiments is Monte Carlo (MC) simulations of physics processes followed  by simulations of detector responses. With increased complexity of such experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming.  For example, the time required to simulate Geant4 hits [] and to reconstruct from such hits physics objects (electrons, muons, taus, jets) requires a factor 100-1000  more CPU time than the creation of typical Monte Carlo events that represent physics processes according to theoretical models (``truth level'' MC event generation).  A possible method to speed up simulations of detector responses is to apply neural networks (NN) trained using the actual Geant4-based simulations, and use such supervised NN for transforming truth-level MC objects (jets and other identified particles) to objects modified by detectors (``detector-level'').  
+A cornerstone of particle collision experiments is Monte Carlo (MC) simulations of physics processes followed by simulations of detector responses. With increased complexity of such experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming.  For example, the time required to simulate Geant4 \cite{geant4} hits and to reconstruct from such hits physics objects (electrons, muons, taus, jets) requires a factor 100-1000 more CPU time than the creation of typical Monte Carlo events that represent physics processes according to theoretical models (``truth level'' MC event generation).  A possible method to speed up simulations of detector responses is to apply neural networks (NN) trained using the Geant4-based simulations, and use such supervised NN for transforming truth-level MC objects (jets and other identified particles) to objects modified by detectors (``detector-level'').  
 
-A typical simulation of detector response stochastically modifies positions and energies of particles and jets created by MC generators at the ``truth-level''. Another important component of such simulations is to introduce additional particles due to misconstructing energy deposits in active detector volumes  (examples include misreconstructed electrons or photons which are, in fact, hadronic jets, etc.). The latter effects  represent a significant complication for the so-called ``fast'' or ''parameterized'' detector simulations, such as Delphes \cite{deFavereau:2013fsa}.
-Nevertheless, fast simulations is proven to be a vital tools for physics performance studies.
+A typical simulation of detector responses stochastically modifies positions and energies of particles and jets created by MC generators at the truth-level. Another important component of such simulations is to introduce additional particles due to misreconstructed energy deposits in active detector volumes  (examples include misreconstructed electrons or photons which are, in fact, hadronic jets). The latter effects represent a significant complication for the so-called ``fast'' or ''parameterized'' detector simulations, such as Delphes \cite{deFavereau:2013fsa}. Nevertheless, parameterized detector simulations have been proven to be a vital tools for physics performance and phenomological studies.
 
-One advantage of fast simulations based on machine learning is that the neural networks can automatically learn the features introduced by detailed full simulations, therefore, handcrafting smearing parameters represent resolutions and inefficiencies, as it was done in Delphes and other fast simulations, is not required. A neural network trained using realistic detector simulation should memorize the transformation from the truth-level to the detector level without interference from analyzers. Another advantage is that the NN approach can introduce a complex interdependence of variables which is currently difficult to implements in parameterized fast simulations. Finally, we expect that NN approach will be faster than the current fast simulations (this will be described later).
+The main advantage of detector parameterization based on machine learning is that a neural networks can automatically learn the features introduced by detailed full simulations, therefore, handcrafting parameters to represent resolutions and inefficiencies, as it was done in Delphes and for upgrade studies~\cite{truthSmearingFunction}, is not required. A neural network trained using realistic detector simulation should memorize the transformation from truth-level to the detector-level quantities without manual binning of quantities by analyzers. Another advantage is that the NN approach can introduce a complex interdependence of variables which is currently difficult to implements in parameterized simulations. %Finally, we expect that NN approach will be faster than the current fast simulations (this will be described later).
 
-As a first step towards fast detector simulations using machine learning techniques, it is instructive to investigate how a transformation from the ``truth-level'' MC to ``detector-level'' objects can be performed, leaving aside the question of introducing objects that are created by misreconstructions.
+As a first step towards parameterized detector simulations using machine learning techniques, it is instructive to investigate how a transformation from the truth-level MC to detector-level objects can be performed, leaving aside the question of introducing objects that are created by misreconstructions.
 
 \section{Traditional parameterized fast simulations}
 
@@ -155,9 +143,9 @@ In abstract terms, a typical variable $f_i$ that characterizes a particle/jet, s
 $$
 \xi_1 = F (\xi_1^T, \xi_2^T, \xi_3^T, ...\xi_N^T).
 $$
-Generally, such a transform  depends on several other variables $\xi_2^T$ ..  $\xi_N^T$ characterizing this (or other) objects at the truth level.   For example, the extent at which jet transverse momentum, \pt\ is modified  by a detector depends on the original truth-level transverse momentum ($\xi_1^T=p_T^T$), pseudorapidity $\eta$,  flavor of jets and other effects that can be inferred from the truth level. For example, if particular detector modules in the azimuthal angle ($\phi$) are not active, this would introduce an additional dependence of this transform on $\phi$.
-% A more difficult case when other objects produced an event can influence  the transformation of $\xi_1$ from $\xi_1^T$.
-Typical fast (``parameterized'') simulations ignores the full range of correlations between the variables. In most cases, the above transform is reduced to a single variable, or two (as in the case of Delphes fast simulations where energy resolution of clusters depend on the original energies of particles and their positions in $\eta$). In order to take into account correlations between  multiple parameters characterizing transformations to the detector level, the following steps have to be undertaken:
+Generally, such a transform  depends on several other variables $\xi_2^T$ ..  $\xi_N^T$ characterizing this (or other) objects at the truth level. For example, the extent at which jet transverse momentum, \pt\ is modified  by a detector depends on the original truth-level transverse momentum ($\xi_1^T=p_T^T$), pseudorapidity $\eta$,  flavor of jets and other effects that can be inferred from the truth level. Similarly if particular detector modules in the azimuthal angle ($\phi$) are not active, this would introduce an additional dependence of this transform on $\phi$.
+
+Typical parameterized simulations ignore the full range of correlations between the variables. In most cases, the above transform is reduced to a single variable, or two (as in the case of Delphes simulations where energy resolution of clusters depend on the original energies of particles and their positions in $\eta$). In order to take into account correlations between  multiple parameters characterizing transformations to the detector level, the following steps have to be undertaken:
 
 \begin{itemize}
 
@@ -169,7 +157,7 @@ Typical fast (``parameterized'') simulations ignores the full range of correlati
 
 \end{itemize}
 
-It should be pointed that the calculation speed for parameterized fast simulations of one variable that depends on $N$ other variables at the truth level depends  as $N_b^N$ since each object at the truth level should be placed inside the grid defined by $N_b$ bins. Therefore, complex parameterisations of resolutions and efficiency's for $N>2$ becomes CPU intensive. 
+It should be pointed out that the calculation speed for parameterized simulations of one variable that depends on $N$ other variables at the truth level depends  as $N_b^N$ since each object at the truth level should be placed inside the grid defined by $N_b$ bins. Therefore, complex parameterisations of resolutions and efficiency's for $N>2$ becomes CPU intensive. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Machine learning approach for fast simulation}
@@ -178,8 +166,7 @@ It should be pointed that the calculation speed for parameterized fast simulatio
 Unlike the traditional approach for fast simulation using parameterized density functions for resolution variables and probability values for efficiency, a neural network approach offers an opportunity to formulate this problem in terms of neural-network nodes and their connections that scale as $N_b^N \cdot N$, which can speed up the fast simulations and, at the same time, can be used for learning more complex full simulations in an automated way.
 
 In the case of objects, such as jets, a typical truth-level input are jet transverse momentum, $\eta$, $\phi$ and jet mass $m$, while the output
-is an array of output nodes that represent the binned probability density function (pdf) of the resolution for a single variable (such as jet \pt). 
-The output can also include a node that specifies the efficiency, i.e. a variable that is either 0 (e.g. a jet did not pass the detector acceptance) or 1 (a jet was within the detector acceptance). Additional input variables can be jet flavor at the truth level, jet radius etc., i.e. any variable that 
+is an array of output nodes that represent the binned probability density function (pdf) of the resolution for a single variable (such as jet \pt). Additional input variables can be jet flavor at the truth level, jet radius etc., i.e. any variable that 
 can influence the output of such neural network. Figure~\ref{ann_example} shows a schematic representation of the NN architecture for modelling detector response for a single output variable. In this example, we show a single hidden layer (in principle, the NN can also be deep with several hidden layers)
 
 \begin{figure}[h]
@@ -193,9 +180,9 @@ can influence the output of such neural network. Figure~\ref{ann_example} shows 
 \section{Monte Carlo simulated event samples}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-Monte Carlo events used for this analysis were generated using the Madgraph generator~\cite{madgraph}. The simulated process was $t\bar{t}+jets$, which give a high rate of jets and lepton. In addition, multijet events were added to increase the statistics at high \pt\ jets. % does multijet really add high stats?
-Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{fastjet} using the anti-$k_T$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.5.  The detector simulation was performed  with the Delphes package \cite{deFavereau:2013fsa} with the ATLAS-like detector geometry. 
-The event samples used in this paper, before and after the fast simulation, are  available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth-level jets to detector-level jets was performed, however the methodology should be object agnostic. 
+Monte Carlo events used for this analysis were generated using the Madgraph generator~\cite{madgraph}. The simulated processes were a combination of $t\bar{t}$+jets and $\gamma$+jets {\color{red} What was the ratio}, which give a high rate of jets and lepton. 
+Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{fastjet} using the anti-$k_T$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.4. The detector simulation was performed with the Delphes package \cite{deFavereau:2013fsa} with an ATLAS-like detector geometry. 
+The event samples used in this paper, before and after the fast simulation, are available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth-level jets to detector-level jets and only for \pt\ was performed, however the methodology should be object and parameter agnostic. Only truth jets which have been matched to a reconstructed Delphes jet are used. For the matching criteria the reconstructed jet that has the smallest $\Delta R=\sqrt{\Delta\phi^2+\Delta\eta^2}$, where $\Delta\phi=\phi^{\text{truth}}-\phi^{\text{reco}}$ and $\Delta\eta=\eta^{\text{truth}}-\eta^{\text{reco}}$, with respect to the truth jet is chosen. If this minimum $\Delta R$ is greater than 0.2, the truth-level jet is discarded. Finally, only truth-reco jet pairs for which the truth jet has $\pt>60$ GeV are selected to move away from the $\pt>15$ GeV bound applied during the generation of the sample. The final number of training jets used is two million while 500,000 jets were used as a testing sample.  
 
 The distributions of quantities used as the input for the NN, \pt, $\eta$\, $\phi$, $m$, are shown in Figure~\ref{fig:nnInputsPrescaling}.
 
@@ -208,80 +195,58 @@ The distributions of quantities used as the input for the NN, \pt, $\eta$\, $\ph
   \label{fig:nnInputsPrescaling}
 \end{figure}
 
-To facilitate gradient descent in all direction of the input variables, the input variables are all scaled to be in the range [0,1]. This avoids the \pt\ and the mass from having a disproportional affect on the training of the NNs. The output variables, consisting \ptRes, \etaRes, \phiRes, \mRes, are also scaled to have values between 0 and 1 and are shown in Figure~\ref{fig:deltaTarget}. Only object that 
-are within the 1$^{\mathrm{st}}$ and 99$^{\mathrm{th}}$ percentile of each of the resolution distributions are considered in this study since objects outside this range are typically not used in physics analyses.
+To facilitate gradient descent in all direction of the input variables, the input variables are all scaled to be in the range [0,1]. This avoids the \pt\ and the mass from having a disproportional affect on the training of the NNs. The output variable, consisting of \ptRes, is also scaled to have values between 0 and 1 and is shown in Figure~\ref{fig:deltaTarget}. Only objects that 
+are within the 1$^{\mathrm{st}}$ and 99$^{\mathrm{th}}$ percentile of the \ptRes\ distribution are considered in this study since objects outside this range are typically not used in physics analyses.
 
 \begin{figure}[h]
-  \includegraphics[width=0.48\textwidth]{pTRes_bounds_scaled.pdf}
-  \includegraphics[width=0.48\textwidth]{mRes_bounds_scaled.pdf}\\
-  \includegraphics[width=0.48\textwidth]{etaRes_bounds_scaled.pdf}
-  \includegraphics[width=0.48\textwidth]{phiRes_bounds_scaled.pdf}
-  \caption{Differences between truth-level and detector-level quantities after scaling so that the difference is in the range [0,1].}
+  \includegraphics[width=0.6\textwidth]{pTRes_bounds_scaled.pdf}
+  \caption{Differences between truth-level and detector-level \pt\ after scaling so that the difference is in the range [0,1].}
   \label{fig:deltaTarget}
 \end{figure}
 
 \section{Neural network structures}
 
-Two approaches when using the input variables are considered: one bins the input variables into 20 bins for each variable (we will called this the ``binned NN'') while the other leaves the input variables unbinned (this will be referred to as the ``unbinned NN''.
-For the binned case, the network structure consists of an input layer with 4*20 nodes, one fully connected hidden layer with 100 nodes and an output layer with 201 nodes. The first 200 nodes represent the bins in jet resolution (\ptRes, \etaRes, \phiRes, \mRes), and one node is added, which either has a value of 0 and 1, represents the probability that the given input jet passes the detector acceptance and reconstruction. The binning of the output reduces a regression problem to a multi-categorization problem which simplifies and reduces the required network parameters. The NN uses sigmoid activation function for all layers. After the training, the output NN nodes contain 201 values representing the probability density distribution for the jet resolution function which can be used to generate shifts in the truth-level quantity due to the detector smearing effects.
-
-In the case of the unbinned inputs, the outputs are binned to have 101 bins with the first bin for the first feature representing the acceptance and reconstruction inefficiency, similar to the binned NN case. {\color{red}mention what happens when there are multiple truth jets within a reco jet}. The binned output variables are shown in Figure~\ref{fig:deltaTarget}. 
-As with the binned NN, an NN is trained for each feature, i.e. an NN exists for \pt, $m$, $\eta$, and $\phi$, individually, resulting in four NNs. The binned NNs consist of five layers with 100 nodes with each node having a ReLu [cite relu] activation function. The output layer has 101 nodes with a softmax activation function. The NN is trained over 20 epochs with batch size 1000. 
+An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a ReLu~\cite{relu} activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Results}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The results for the binned NN training compared to the default Delphes fast simulation (used for the NN training)
-are shown in Fig.~\ref{plot_ptres_eta_binned}.
-To test whether the NN learned correlations between input parameters and the resolutions, the jets were divided into central ($|\eta|<2$ and forward ($|\eta|>2$ jets, then the \pt\ resolutions were compared between the two regions for both the Delphes jets as well as the NN-generated jets. These two regions in detectors typically have different jet \pt\ resolutions and thus the \pt\ resolution is correlated with the $\eta$. The trained binned NN describes the Delphes simulations well.
-In particular, the dependence of jet \pt\ resolution is well modeled for different $\eta$ regions,
-which is an indication that the NN learns correlations between input variables. It is also important to note that the jet efficiency included in Delphes can be reproduced by the NN with a $1\%$ accuracy.
+After the NN has been trained to learn the pdf of \ptRes, the resulting learned pdf is compared to the Delphes pdf using the testing sample in Fig.~\cite{fig:pdfComp}. Good agreement is observed between the Delphes and NN pdfs, showing that the NN has learned the bulk distribution.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.48\textwidth]{plot_ptres_eta.pdf}
-  \includegraphics[width=0.48\textwidth]{plot_ptres_all.pdf}
-  \caption{Left: NN-generated jet \pt\ resolutions for central (black) and forward (red) jets for Delphes (circles) and NN-generated jets (dashed line).
-  Right: The standard deviation of the \ptRes\ as a function of \pt for Delphes (black) and the NN (red).}
-  \label{fig:plot_ptres_eta_binned}
+  \includegraphics[width=0.6\textwidth]{jet_pTRes.pdf}
+  \caption{NN-generated jet \ptRes compared to detector-level jet \ptRes.}
+  \label{fig:pdfComp}
 \end{figure}
 
+The NN predicts a pdf for each jet based on its input parameters (i.e. $\phi$, $\eta$, $m$). The pdfs for a set of randomly selected jets are shown in Fig.~\ref{fig:randomJetPDF}. These pdfs are then randomly sampled to produce a NN jet that mimic the detector-level jet. A comparison of the NN-generated and Delphes jet \pt for the testing sample is shown in Fig.~\cite{fig:nnVsDelphes}. The NN reproduces the jet \pt\ of Delphes within XX\% for reconstructed jets with $\pt>40$ GeV and YY\% for reconstructed jets with $\pt>50$ GeV. spectrum within 5\% of the 
 
-The learned resolution pdfs learned by the unbinned NN are compared to the Delphes resolutions in Fig.~\ref{fig:nnRes}.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.48\textwidth]{jet_pTRes.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_mRes.pdf}\\
-  \includegraphics[width=0.48\textwidth]{jet_etaRes.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_phiRes.pdf}
-  \caption{Resolutions for the jet \pt, mass, $\eta$, $\phi$. The red dots correspond to the NN output summed over the entire test sample while the black dots correspond to resolutions from Delphes. The first bin of the \pt\ pdf is used to quantifiy the inefficiency of the reconstruction. }
-  \label{fig:nnRes}
+  \includegraphics[width=0.6\textwidth]{nnOutput_pT.pdf}
+  \caption{NN-generated jet pdfs for three randomly selected truth-level jets. }
+  \label{fig:randomJetPDF}
 \end{figure}
 
-
-The truth-level quantities are corrected using the NN generated pdfs resulting in NN generated objects. A comparison between truth-level, detector-level, and NN-generated features is shown in Fig.~\ref{fig:nnVsDelphes}. The agreement between detector-level and NN-generated features is within XX\%. As with the binned NN, figure~\ref{fig:plot_ptres_eta_unbinned} shows that the NN reproduces the difference in resolutions for central and forward jets. 
-
 \begin{figure}[htb]
-  \includegraphics[width=0.48\textwidth]{jet_pT_genVsReco_origScale_test_log.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_m_genVsReco_origScale_test_log.pdf}\\
-  \includegraphics[width=0.48\textwidth]{jet_eta_genVsReco_origScale_test.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_phi_genVsReco_origScale_test.pdf}
+  \includegraphics[width=0.6\textwidth]{jet_pT_genVsReco_origScale_test_log.pdf}
   \caption{NN-generated jet \pt, mass, $\eta$, $\phi$ compared to truth-level and detector-level jet features. }
   \label{fig:nnVsDelphes}
 \end{figure}
 
+To test whether the NN learned correlations between input parameters and the \pt\ resolution, defined as $\frac{\ptRes}{\pt^{\text{truth}}}$, the jets were divided into central ($|\eta|<3.2$ and forward ($|\eta|>3.2$ jets), then the \pt\ resolution is compared between the two regions for both the Delphes jets as well as the NN-generated jets. These two regions in detectors have different calorimeter resolutions which results in different jet \pt\ resolutions and thus the \pt\ resolution is correlated with $|\eta|$. The resulting resolutions for both regions and for the training samples and jets are shown in Fig.~\ref{fig:nnRes}. The training sample was chosen because it has significantly more jets and due the low number of jets that have $|\eta|>3.2$, as can be seen in Fig.~\ref{fig:nnInputsPrescaling}. The NN reproduces the central jet resolution very well and doesn't perform as well in the forward region.
+
 \begin{figure}[htb]
-  \includegraphics[width=0.48\textwidth]{jet_pTResLowEta.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_pTResOrigScale_std.pdf}
-  \caption{Left: NN-generated jet \pt\ resolutions for central (black) and forward (red) jets for Delphes (circles) and NN-generated jets (dashed line).
-  Right: The standard deviation of the \ptRes\ as a function of \pt for Delphes (black) and the NN (red).}
-  \label{fig:plot_ptres_eta_unbinned}
+  \includegraphics[width=0.6\textwidth]{jet_pTResEtaPT.pdf}
+  \caption{Resolutions for the jet \pt\ for the training sample. }
+  \label{fig:nnRes}
 \end{figure}
 
 \section{Hyperparameter scan}
 
-\section{Performance consideration?}
-For the binned NN, the training of one variable typically takes 30 min using 16 parallel processes.
+% \section{Performance consideration?}
+% For the binned NN, the training of one variable typically takes 30 min using 16 parallel processes.
 
 \section{Conclusion}
 
