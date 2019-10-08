@@ -1,4 +1,4 @@
-
+ 
 \documentclass[showpacs,showkeys,preprint,prd,nofootinbib,linenumbers,12pt]{revtex4-1}
 
 \usepackage{graphicx} % This is already loaded by the atlasnote class
@@ -106,7 +106,6 @@
 \item Fix missing references (Doug).
   \begin{itemize}
   \item ReLU reference?
-  \item Madgraph reference (can take this from stop0L paper)?
   \end{itemize}
 \item Write something about the hyperparameters (Ying).
   \begin{itemize}
@@ -128,7 +127,7 @@
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-A cornerstone of particle collision experiments is Monte Carlo (MC) simulations of physics processes followed by simulations of detector responses. With increased complexity of such experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming.  For example, the time required to simulate Geant4 \cite{geant4} hits and to reconstruct from such hits physics objects (electrons, muons, taus, jets) requires a factor 100-1000 more CPU time than the creation of typical Monte Carlo events that represent physics processes according to theoretical models (``truth level'' MC event generation).  A possible method to speed up simulations of detector responses is to apply neural networks (NN) trained using the Geant4-based simulations, and use such supervised NN for transforming truth-level MC objects (jets and other identified particles) to objects modified by detectors (``detector-level'').  
+A cornerstone of particle collision experiments is Monte Carlo (MC) simulations of physics processes followed by simulations of detector responses. With increased complexity of such experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming.  For example, the time required to simulate Geant4~\cite{Agostinelli:2002hh} hits and to reconstruct from such hits physics objects (electrons, muons, taus, jets) requires a factor 100-1000 more CPU time than the creation of typical Monte Carlo events that represent physics processes according to theoretical models (``truth level'' MC event generation).  A possible method to speed up simulations of detector responses is to apply neural networks (NN) trained using the Geant4-based simulations, and use such supervised NN for transforming truth-level MC objects (jets and other identified particles) to objects modified by detectors (``detector-level'').  
 
 A typical simulation of detector responses stochastically modifies positions and energies of particles and jets created by MC generators at the truth-level. Another important component of such simulations is to introduce additional particles due to misreconstructed energy deposits in active detector volumes  (examples include misreconstructed electrons or photons which are, in fact, hadronic jets). The latter effects represent a significant complication for the so-called ``fast'' or ''parameterized'' detector simulations, such as Delphes \cite{deFavereau:2013fsa}. Nevertheless, parameterized detector simulations have been proven to be a vital tools for physics performance and phenomological studies.
 
@@ -170,7 +169,7 @@ is an array of output nodes that represent the binned probability density functi
 can influence the output of such neural network. Figure~\ref{ann_example} shows a schematic representation of the NN architecture for modelling detector response for a single output variable. In this example, we show a single hidden layer (in principle, the NN can also be deep with several hidden layers)
 
 \begin{figure}[h]
-  \includegraphics[width=0.8\textwidth]{nn_example.png}
+  \includegraphics[width=0.8\textwidth]{figures/intro/nn_example.png}
   \caption{A schematic representation of the NN architecture for modelling the detector response to truth-level input variables.}
   \label{ann_example}
 \end{figure}
@@ -180,57 +179,55 @@ can influence the output of such neural network. Figure~\ref{ann_example} shows 
 \section{Monte Carlo simulated event samples}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-Monte Carlo events used for this analysis were generated using the Madgraph generator~\cite{madgraph}. The simulated processes were a combination of $t\bar{t}$+jets and $\gamma$+jets {\color{red} What was the ratio}, which give a high rate of jets and lepton. 
-Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{fastjet} using the anti-$k_T$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.4. The detector simulation was performed with the Delphes package \cite{deFavereau:2013fsa} with an ATLAS-like detector geometry. 
-The event samples used in this paper, before and after the fast simulation, are available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth-level jets to detector-level jets and only for \pt\ was performed, however the methodology should be object and parameter agnostic. Only truth jets which have been matched to a reconstructed Delphes jet are used. For the matching criteria the reconstructed jet that has the smallest $\Delta R=\sqrt{\Delta\phi^2+\Delta\eta^2}$, where $\Delta\phi=\phi^{\text{truth}}-\phi^{\text{reco}}$ and $\Delta\eta=\eta^{\text{truth}}-\eta^{\text{reco}}$, with respect to the truth jet is chosen. If this minimum $\Delta R$ is greater than 0.2, the truth-level jet is discarded. Finally, only truth-reco jet pairs for which the truth jet has $\pt>60$ GeV are selected to move away from the $\pt>15$ GeV bound applied during the generation of the sample. The final number of training jets used is two million while 500,000 jets were used as a testing sample.  
+Monte Carlo events used for this analysis were generated using the Madgraph generator~~\cite{Alwall:2014hca}. The simulated processes were a combination of $t\bar{t}$+jets and $\gamma$+jets {\color{red} What was the ratio}, which give a high rate of jets and lepton. 
+Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{Fastjet} using the anti-$k_T$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.4. The detector simulation was performed with the Delphes package \cite{deFavereau:2013fsa} with an ATLAS-like detector geometry. 
+The event samples used in this paper, before and after the fast simulation, are available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth-level jets to detector-level jets and only for \pt\ was performed, however the methodology should be object and parameter agnostic. Only truth jets which have been matched to a reconstructed Delphes jet are used. For the matching criteria the reconstructed jet that has the smallest $\Delta R=\sqrt{\Delta\phi^2+\Delta\eta^2}$, where $\Delta\phi=\phi^{\text{truth}}-\phi^{\text{reco}}$ and $\Delta\eta=\eta^{\text{truth}}-\eta^{\text{reco}}$, with respect to the truth jet is chosen. If this minimum $\Delta R$ is greater than 0.2, the truth-level jet is discarded.
+The poor modeling of the NN below $\pt\sim 50$ GeV is due to the $\pt>15$ GeV requirement made on the reconstructed and truth jets. The requirement on the truth jets in combination with the width of the \ptRes, shown in Figure~\ref{fig:deltaTarget}, results in insufficient information being available to transform truth-level jet \pt s to reconstruction-level jet \pt s.
+% Finally, only truth-reco jet pairs for which the truth jet has $\pt>60$ GeV are selected to move away from the $\pt>15$ GeV bound applied during the generation of the sample.
+The final number of training jets used is two million while 500,000 jets were used as a testing sample.  
 
 The distributions of quantities used as the input for the NN, \pt, $\eta$\, $\phi$, $m$, are shown in Figure~\ref{fig:nnInputsPrescaling}.
 
 \begin{figure}[h]
-  \includegraphics[width=0.48\textwidth]{jet_pT_prescaling_log.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_m_prescaling_log.pdf}\\
-  \includegraphics[width=0.48\textwidth]{jet_eta_prescaling.pdf}
-  \includegraphics[width=0.48\textwidth]{jet_phi_prescaling.pdf}
+  \includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_prescaling_log.eps}
+  \includegraphics[width=0.48\textwidth]{figures/nn/jet_m_prescaling_log.eps}\\
+  \includegraphics[width=0.48\textwidth]{figures/nn/jet_eta_prescaling.eps}
+  \includegraphics[width=0.48\textwidth]{figures/nn/jet_phi_prescaling.eps}
   \caption{Input variable shapes for truth-level (red) and detector-level quantities (black).}
   \label{fig:nnInputsPrescaling}
 \end{figure}
 
-To facilitate gradient descent in all direction of the input variables, the input variables are all scaled to be in the range [0,1]. This avoids the \pt\ and the mass from having a disproportional affect on the training of the NNs. The output variable, consisting of \ptRes, is also scaled to have values between 0 and 1 and is shown in Figure~\ref{fig:deltaTarget}. Only objects that 
+To facilitate gradient descent in all direction of the input variables, the input variables are all scaled to be in the range [0,1]. This avoids the \pt\ and the mass from having a disproportional affect on the training of the NNs. The output variable, \ptRes, is also scaled to have values between 0 and 1. Only objects that 
 are within the 1$^{\mathrm{st}}$ and 99$^{\mathrm{th}}$ percentile of the \ptRes\ distribution are considered in this study since objects outside this range are typically not used in physics analyses.
 
 \begin{figure}[h]
-  \includegraphics[width=0.6\textwidth]{pTRes_bounds_scaled.pdf}
-  \caption{Differences between truth-level and detector-level \pt\ after scaling so that the difference is in the range [0,1].}
+  \includegraphics[width=0.6\textwidth]{figures/nn/pTRes_nobounds_prescaling.eps}
+  \caption{Differences between truth-level and detector-level \pt.}
   \label{fig:deltaTarget}
 \end{figure}
 
 \section{Neural network structures}
 
-An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a ReLu~\cite{relu} activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10.
+An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10 using the Adam~\cite{adam} optimizer with a learning rate of . The NN is implemented using Keras~\cite{chollet2015keras} with a tensorflow~\cite{tensorflow2015-whitepaper} backend.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Results}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-After the NN has been trained to learn the pdf of \ptRes, the resulting learned pdf is compared to the Delphes pdf using the testing sample in Fig.~\cite{fig:pdfComp}. Good agreement is observed between the Delphes and NN pdfs, showing that the NN has learned the bulk distribution.
+After the NN has been trained to learn the pdf of \ptRes, the resulting learned pdf is compared to the Delphes pdf using the testing sample in Fig.~\ref{fig:pdfComp}. Good agreement is observed between the Delphes and NN pdfs, showing that the NN has learned the bulk distribution.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.6\textwidth]{jet_pTRes.pdf}
-  \caption{NN-generated jet \ptRes compared to detector-level jet \ptRes.}
+  \includegraphics[width=0.48\textwidth]{figures/nn/jet_pTRes_batchSize10.eps}
+  \includegraphics[width=0.48\textwidth]{figures/nn/nnOutput_pT_batchSize10.eps}
+  \caption{Left: NN-generated jet \ptRes\ compared to detector-level jet \ptRes. Right: NN-generated jet pdfs for three randomly selected truth-level jets.}
   \label{fig:pdfComp}
 \end{figure}
 
-The NN predicts a pdf for each jet based on its input parameters (i.e. $\phi$, $\eta$, $m$). The pdfs for a set of randomly selected jets are shown in Fig.~\ref{fig:randomJetPDF}. These pdfs are then randomly sampled to produce a NN jet that mimic the detector-level jet. A comparison of the NN-generated and Delphes jet \pt for the testing sample is shown in Fig.~\cite{fig:nnVsDelphes}. The NN reproduces the jet \pt\ of Delphes within XX\% for reconstructed jets with $\pt>40$ GeV and YY\% for reconstructed jets with $\pt>50$ GeV. spectrum within 5\% of the 
-
-
-\begin{figure}[htb]
-  \includegraphics[width=0.6\textwidth]{nnOutput_pT.pdf}
-  \caption{NN-generated jet pdfs for three randomly selected truth-level jets. }
-  \label{fig:randomJetPDF}
-\end{figure}
+The NN predicts a pdf for each jet based on its input parameters (i.e. $\phi$, $\eta$, $m$). The pdfs for a set of randomly selected jets are shown in Fig.~\ref{fig:pdfComp}. These pdfs are then randomly sampled to produce a NN jet that mimic the detector-level jet. A comparison of the NN-generated and Delphes jet \pt for the testing sample is shown in Fig.~\ref{fig:nnVsDelphes}. The NN reproduces the jet \pt\ distribution of Delphes within 5\% for reconstructed jets with $\pt>50$ GeV. 
 
 \begin{figure}[htb]
-  \includegraphics[width=0.6\textwidth]{jet_pT_genVsReco_origScale_test_log.pdf}
+  \includegraphics[width=0.6\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize10_log.eps}
+  \includegraphics[width=0.6\textwidth]{figures/nn/jet_pT_genVsReco_origScale_zoom_test_batchSize10_log.eps}
   \caption{NN-generated jet \pt, mass, $\eta$, $\phi$ compared to truth-level and detector-level jet features. }
   \label{fig:nnVsDelphes}
 \end{figure}
@@ -238,7 +235,7 @@ The NN predicts a pdf for each jet based on its input parameters (i.e. $\phi$, $
 To test whether the NN learned correlations between input parameters and the \pt\ resolution, defined as $\frac{\ptRes}{\pt^{\text{truth}}}$, the jets were divided into central ($|\eta|<3.2$ and forward ($|\eta|>3.2$ jets), then the \pt\ resolution is compared between the two regions for both the Delphes jets as well as the NN-generated jets. These two regions in detectors have different calorimeter resolutions which results in different jet \pt\ resolutions and thus the \pt\ resolution is correlated with $|\eta|$. The resulting resolutions for both regions and for the training samples and jets are shown in Fig.~\ref{fig:nnRes}. The training sample was chosen because it has significantly more jets and due the low number of jets that have $|\eta|>3.2$, as can be seen in Fig.~\ref{fig:nnInputsPrescaling}. The NN reproduces the central jet resolution very well and doesn't perform as well in the forward region.
 
 \begin{figure}[htb]
-  \includegraphics[width=0.6\textwidth]{jet_pTResEtaPT.pdf}
+  \includegraphics[width=0.6\textwidth]{figures/nn/jet_pTResEta_batchSize10.eps}
   \caption{Resolutions for the jet \pt\ for the training sample. }
   \label{fig:nnRes}
 \end{figure}
@@ -249,6 +246,7 @@ To test whether the NN learned correlations between input parameters and the \pt
 % For the binned NN, the training of one variable typically takes 30 min using 16 parallel processes.
 
 \section{Conclusion}
+We have shown that a truth-level quantity can be transformed to a reconstruction-level quantity using a multi-categorizing NN. 
 
 \section*{Acknowledgments}
 The submitted manuscript has been created by UChicago Argonne, LLC, Operator of Argonne National Laboratory (“Argonne”). Argonne, a U.S.  Department of Energy Office of Science laboratory, is operated under Contract No. DE-AC02-06CH11357. The U.S. Government retains for itself, 
@@ -259,8 +257,11 @@ DOE Public Access Plan. \url{http://energy.gov/downloads/doe-public-access-plan}
 
 %%%%%%%%%%%%%%%%%%%%%% references %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \clearpage
-\section*{References}
-\bibliography{references}
+\bibliographystyle{unsrt}   % this means that the order of references
+			    % is dtermined by the order in which the
+			    % \cite and \nocite commands appear
+\bibliography{main}  % list here all the bibliographies that
+			     % you need. 
 
 
 \end{document}
