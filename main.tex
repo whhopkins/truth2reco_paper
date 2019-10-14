@@ -96,7 +96,7 @@
 
 
 \begin{abstract}
-Accurately and computationally rapidly modeling stochastic detector response for complex LHC experiments involving many particles from multiple interaction points, up to 200 interactions per proton-proton crossing in the HL-LHC requires the development of novel techniques. A study aimed at finding a fast transformation from truth-level physics objects to reconstructed detector-level physics objects is presented. This study used Delphes fast simulation based on an LHC-like detector geometry for inputs for a multi-categorizing machine learning (ML) algorithms. This ML transfer algorithms, with sufficient optimization, could have a wide range of applications: improving phenomenological studies by using a better detector representation, speeding up fast simulations based on parametric description of LHC detector responses, and allowing for more efficient production of Geant-4 simulation by only simulating events within an interesting part of phase space.
+Accurately and computationally rapidly modeling stochastic detector response for complex LHC experiments involving many particles from multiple interaction points requires the development of novel techniques. A study aimed at finding a fast transformation from truth-level physics objects to reconstructed detector-level physics objects is presented. This study used Delphes fast simulation based on an LHC-like detector geometry for inputs for a multi-categorizing machine learning (ML) algorithms. This ML transfer algorithms, with sufficient optimization, could have a wide range of applications: improving phenomenological studies by using a better detector representation, speeding up fast simulations based on parametric description of LHC detector responses, and allowing for more efficient production of Geant4 simulation by only simulating events within an interesting part of phase space.
 \end{abstract}
 
 \maketitle
@@ -105,11 +105,11 @@ Accurately and computationally rapidly modeling stochastic detector response for
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-A cornerstone of particle collision experiments is Monte Carlo (MC) simulations of physics processes followed by simulations of detector responses. With increased complexity of such experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming.  For example, the time required to simulate Geant4~\cite{Agostinelli:2002hh} hits and to reconstruct from such hits physics objects (electrons, muons, taus, jets) requires a factor 100-1000 more CPU time than the creation of typical Monte Carlo events that represent physics processes according to theoretical models (``truth level'' MC event generation).  A possible method to speed up simulations of detector responses is to apply neural networks (NN) trained using the Geant4-based simulations, and use such supervised NN for transforming truth-level MC objects (jets and other identified particles) to objects modified by detectors (``detector-level'').  
+A cornerstone of particle collision experiments is Monte Carlo (MC) simulations of physics processes followed by simulations of detector responses. With increased complexity of such experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming.  For example, the time required to simulate Geant4~\cite{Agostinelli:2002hh} hits and to reconstruct from such hits physics objects (electrons, muons, taus, jets) needs a factor 100-1000 more CPU time than the creation of typical Monte Carlo events that represent physics processes according to theoretical models (``truth level'' MC event generation).  A possible method to speed up simulations of detector responses is to apply neural networks (NN) trained using the Geant4-based simulations, and use such supervised NN for transforming truth-level MC objects (jets and other identified particles) to objects modified by detectors (``detector-level'').  
 
 A typical simulation of detector responses stochastically modifies positions and energies of particles and jets created by MC generators at the truth-level. Another important component of such simulations is to introduce additional particles due to misreconstructed energy deposits in active detector volumes  (examples include misreconstructed electrons or photons which are, in fact, hadronic jets). The latter effects represent a significant complication for the so-called ``fast'' or ''parameterized'' detector simulations, such as Delphes \cite{deFavereau:2013fsa}. Nevertheless, parameterized detector simulations have been proven to be a vital tools for physics performance and phenomological studies.
 
-The main advantage of detector parameterization based on machine learning is that a neural networks can automatically learn the features introduced by detailed full simulations, therefore, handcrafting parameters to represent resolutions and inefficiencies, as it was done in Delphes and for upgrade studies~\cite{truthSmearingFunction}, is not required. A neural network trained using realistic detector simulation should memorize the transformation from truth-level to the detector-level quantities without manual binning of quantities by analyzers. Another advantage is that the NN approach can introduce a complex interdependence of variables which is currently difficult to implements in parameterized simulations. %Finally, we expect that NN approach will be faster than the current fast simulations (this will be described later).
+The main advantage of detector parameterization based on machine learning is that a neural networks can automatically learn the features introduced by detailed full simulations, therefore, handcrafting parameters to represent resolutions and inefficiencies, as it was done in Delphes and for upgrade studies, is not required. A neural network trained using realistic detector simulation should memorize the transformation from truth-level to the detector-level quantities without manual binning of quantities by analyzers. Another advantage is that the NN approach can introduce a complex interdependence of variables which is currently difficult to implements in parameterized simulations. %Finally, we expect that NN approach will be faster than the current fast simulations (this will be described later).
 
 As a first step towards parameterized detector simulations using machine learning techniques, it is instructive to investigate how a transformation from the truth-level MC to detector-level objects can be performed, leaving aside the question of introducing objects that are created by misreconstructions.
 
@@ -140,15 +140,15 @@ It should be pointed out that the calculation speed for parameterized simulation
 \section{Machine learning approach for fast simulation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-Unlike the traditional approach for fast simulation using parameterized density functions for resolution variables and probability values for efficiency, a neural network approach offers an opportunity to formulate this problem in terms of neural-network nodes and their connections that scale as $N_b^N \cdot N$, which can speed up the fast simulations and, at the same time, can be used for learning more complex full simulations in an automated way.
+Unlike the traditional approach for fast simulation using parameterized density functions for resolution variables and probability values for efficiency, a neural network approach offers an opportunity to formulate this problem in terms of NN nodes and their connections that scale as $N_b^N \cdot N$, which can speed up the fast simulations and, at the same time, can be used for learning more complex full simulations in an automated way.
 
 In the case of objects, such as jets, a typical truth-level input are jet transverse momentum, $\eta$, $\phi$ and jet mass $m$, while the output
-is an array of output nodes that represent the binned probability density function (pdf) of the resolution for a single variable (such as jet \pt). Additional input variables can be jet flavor at the truth level, jet radius etc., i.e. any variable that 
-can influence the output of such neural network. Figure~\ref{ann_example} shows a schematic representation of the NN architecture for modelling detector response for a single output variable. In this example, we show a single hidden layer (in principle, the NN can also be deep with several hidden layers)
+is an array of output nodes that represent the binned probability density function (PDF) of the resolution for a single variable (such as jet \pt). Additional input variables can be jet flavor at the truth level, jet radius etc., i.e. any variable that 
+can influence the output of such neural network. Figure~\ref{ann_example} shows a schematic representation of the NN architecture for modelling detector response for a single output variable. The inputs of the NN are variables that can affect the object resolutions while the hidden layers are used to capture correlations between these variables and the the output which consist of a binned PDF. The aim is to have the NN learn the shape of this PDF, for example for the $\pt$, depending on other variables such as the $\eta$ of the object.
 
 \begin{figure}[h]
   \includegraphics[width=0.8\textwidth]{figures/intro/nn_example.png}
-  \caption{A schematic representation of the NN architecture for modelling the detector response to truth-level input variables.}
+  \caption{A schematic representation of the NN architecture for modelling the detector response to truth-level input variables. The output of this NN is PDF for a single variable, e.g. \ptRes, which modified by the detector.}
   \label{ann_example}
 \end{figure}
 
@@ -186,29 +186,29 @@ are within the 1$^{\mathrm{st}}$ and 99$^{\mathrm{th}}$ percentile of the \ptRes
 
 \section{Neural network structures}
 
-An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10 using the Adam~\cite{adam} optimizer with a learning rate of . The NN is implemented using Keras~\cite{chollet2015keras} with a tensorflow~\cite{tensorflow2015-whitepaper} backend.
+An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10 using the Adam~\cite{adam} optimizer with a learning rate of 0.0001. The NN is implemented using Keras~\cite{chollet2015keras} with a TensorFlow~\cite{tensorflow2015-whitepaper} backend.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Results}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-After the NN has been trained to learn the pdf of \ptRes, the resulting learned pdf is compared to the Delphes pdf using the testing sample in Fig.~\ref{fig:pdfComp}. Good agreement is observed between the Delphes and NN pdfs, showing that the NN has learned the bulk distribution.
+After the NN has been trained to learn the PDF of \ptRes, the resulting learned PDF is compared to the Delphes PDF using the testing sample in Fig.~\ref{fig:PDFComp}. Good agreement is observed between the Delphes and NN PDFs, showing that the NN has learned the bulk distribution.
 
 \begin{figure}[htb]
   \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTRes_batchSize10.eps}}
   \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/nnOutput_pT_batchSize10.eps}}
-  \caption{NN-generated jet \ptRes\ compared to detector-level jet \ptRes\ (a). Right: NN-generated jet pdfs for three randomly selected truth-level jets (b).}
+  \caption{NN-generated jet \ptRes\ compared to detector-level jet \ptRes\ (a). NN-generated jet PDFs for three randomly selected truth-level jets (b).}
   \label{fig:pdfComp}
 \end{figure}
 
-The NN predicts a pdf for each jet based on its input parameters (i.e. \pt, $\phi$, $\eta$, and $m$). The pdfs for a set of randomly selected jets are shown in Fig.~\ref{fig:pdfComp}. These pdfs are then randomly sampled to produce a NN jet that mimic the detector-level jet. A comparison of the NN-generated and Delphes jet \pt\ distributions for the testing sample and for NNs trained with batch sizes 10000, 1000, 10, and 5 are shown in Fig.~\ref{fig:nnVsDelphes} while a the distributions at lower \pt\ are shown in Fig.~\ref{fig:nnVsDelphesZoom}. The NN reproduces the jet \pt\ distribution of Delphes within 5\% for reconstructed jets with $\pt>20$ GeV for all batch size less than 100. 
+The NN predicts a PDF for each jet based on its input parameters (i.e. \pt, $\phi$, $\eta$, and $m$). The PDFs for a set of randomly selected jets are shown in Fig.~\ref{fig:pdfComp}. These PDFs are then randomly sampled to produce a NN jet that mimic the detector-level jet. A comparison of the NN-generated and Delphes jet \pt\ distributions for the testing sample and for NNs trained with batch sizes 10000, 1000, 10, and 5 are shown in Fig.~\ref{fig:nnVsDelphes} while a the distributions at lower \pt\ are shown in Fig.~\ref{fig:nnVsDelphesZoom}. The NN reproduces the jet \pt\ distribution of Delphes within 5\% for reconstructed jets with $\pt>20$ GeV for all batch size less than 100. 
 
 \begin{figure}[htb]
   \subfigure[ batch size = 1000]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize1000_log.eps}}
   \subfigure[ batch size = 100]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize1000_log.eps}}\\
   \subfigure[ batch size = 10]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize10_log.eps}}
   \subfigure[ batch size = 5]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize5_log.eps}}
-  \caption{NN-generated jet \pt\ distribution compared to truth-level and detector-level jet \pt\ distributions for batch sizes 10000 (a), 1000 (b), 10 (c), and 5 (d).. }
+  \caption{NN-generated jet \pt\ distribution compared to truth-level and detector-level jet \pt\ distributions for batch sizes 10000 (a), 1000 (b), 10 (c), and 5 (d). }
   \label{fig:nnVsDelphes}
 \end{figure}
 
@@ -236,7 +236,7 @@ To test whether the NN learned correlations between input parameters and the \pt
 
 \section{Conclusion}
 
-We have shown that a truth-level quantity can be transformed to a reconstruction-level quantity using a multi-categorizing NN. The NN learned the changes in resolutions of different regions of the detector. For the NN to learn these changes in resolutions for small subsets of objects, such as for forward jets, small batch size training was necessary. The NN learned the truth-to-reconstruction transformation without requiring manual binning to capture the differences in resolutions of particular subsamples. This method should be easily extendable to additional reconstructed quantities and could be used to model the ATLAS and CMS detector. The method described in this paper thus allows for automated detector parameterization which can facilitate phenomological, efficient Geant-4 simulation, and upgrade studies. 
+We have shown that a truth-level quantity can be transformed to a reconstruction-level quantity using a multi-categorizing NN. The NN learned the changes in resolutions of different regions of the detector based on the NN inputs during training. For the NN to learn these correlations between variables for small subsets of objects, such as for forward jets, small batch size training was necessary. The NN learned the truth-to-reconstruction transformation without requiring manual binning to capture the differences in resolutions of particular subsamples. This method should be easily extendable to additional reconstructed quantities and could be used to model the ATLAS and CMS detector. The method described in this paper thus allows for automated detector parameterization which can facilitate phenomological, efficient Geant4 simulation, and upgrade studies. 
 
 \section*{Acknowledgments}
 The submitted manuscript has been created by UChicago Argonne, LLC, Operator of Argonne National Laboratory (“Argonne”). Argonne, a U.S.  Department of Energy Office of Science laboratory, is operated under Contract No. DE-AC02-06CH11357. The U.S. Government retains for itself, 
