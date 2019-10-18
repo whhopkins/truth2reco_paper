@@ -1,5 +1,5 @@
 
-\documentclass[showpacs,showkeys,preprint,prd,nofootinbib,linenumbers,12pt]{revtex4-1}
+\documentclass[showpacs,showkeys,preprint,prd,nofootinbib,linenumbers,12pt,superscriptaddress]{revtex4-1}
 
 \usepackage{graphicx} % This is already loaded by the atlasnote class
 % Just use it to include your plots!
@@ -59,6 +59,7 @@
 \def\mRes{\ensuremath{m^{\mathrm{truth}}-m^{\mathrm{reco}}}}
 \def\deltaRecoTruth{\ensuremath{\Delta(\mathrm{reco},\mathrm{truth})}}
 
+  
 % Draft version: if given, adds draft version on front page, a
 % 'DRAFT' box on top of each other page, and line numbers to easy
 % commenting. Comment or remove in final version.
@@ -75,7 +76,7 @@
 
 % \hfill \today
 
-\date{May 9, 2019}
+\date{\today}
 % \hfill \today
 
 \vspace{2.5cm}
@@ -86,14 +87,31 @@
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-
-\author{D. Benjamin, S. Chekanov, W. Hopkins, Y. Li, J. R. Love,}
+\author{D. Benjamin}
 \affiliation{
-  HEP Division, Argonne National Laboratory,
+  High Energy Physics Division, Argonne National Laboratory,
   9700 S.~Cass Avenue, Argonne, IL 60439, USA 
-}% 
-
-
+}
+\author{S. Chekanov}
+\affiliation{
+  High Energy Physics Division, Argonne National Laboratory,
+  9700 S.~Cass Avenue, Argonne, IL 60439, USA 
+}
+\author{W. Hopkins}
+\affiliation{
+  High Energy Physics Division, Argonne National Laboratory,
+  9700 S.~Cass Avenue, Argonne, IL 60439, USA 
+}
+\author{Y. Li}
+\affiliation{
+  Computational Science Division, Argonne National Laboratory,
+  9700 S.~Cass Avenue, Argonne, IL 60439, USA 
+}
+\author{J. R. Love}
+\affiliation{
+  High Energy Physics Division, Argonne National Laboratory,
+  9700 S.~Cass Avenue, Argonne, IL 60439, USA 
+}
 
 \begin{abstract}
 Accurately and computationally rapidly modeling stochastic detector response for complex LHC experiments involving many particles from multiple interaction points requires the development of novel techniques. A study aimed at finding a fast transformation from truth-level physics objects to reconstructed detector-level physics objects is presented. This study used Delphes fast simulation based on an LHC-like detector geometry for inputs for a multi-categorizing machine learning (ML) algorithms. This ML transfer algorithms, with sufficient optimization, could have a wide range of applications: improving phenomenological studies by using a better detector representation, speeding up fast simulations based on parametric description of LHC detector responses, and allowing for more efficient production of Geant4 simulation by only simulating events within an interesting part of phase space.
@@ -157,11 +175,9 @@ can influence the output of such neural network. Figure~\ref{ann_example} shows 
 \section{Monte Carlo simulated event samples}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-Monte Carlo events used for this analysis were generated using the Madgraph generator~~\cite{Alwall:2014hca}. The simulated processes were a combination of $t\bar{t}$+jets and $\gamma$+jets, which give a high rate of jets and lepton. 
+Monte Carlo events used for this analysis were generated using the Madgraph generator~~\cite{Alwall:2014hca}. The simulated processes were a combination of equal parts $t\bar{t}$+jets and $\gamma$+jets, which give a high rate of jets in different environments. 
 Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{Fastjet} using the anti-$k_T$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.4. The detector simulation was performed with the Delphes package \cite{deFavereau:2013fsa} with an ATLAS-like detector geometry. 
-The event samples used in this paper, before and after the fast simulation, are available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth-level jets to detector-level jets and only for \pt\ was performed, however the methodology should be object and parameter agnostic. Only truth jets which have been matched to a reconstructed Delphes jet are used. For the matching criteria the reconstructed jet that has the smallest $\Delta R=\sqrt{\Delta\phi^2+\Delta\eta^2}$, where $\Delta\phi=\phi^{\text{truth}}-\phi^{\text{reco}}$ and $\Delta\eta=\eta^{\text{truth}}-\eta^{\text{reco}}$, with respect to the truth jet is chosen. If this minimum $\Delta R$ is greater than 0.2, the truth-level jet is discarded.
-The poor modeling of the NN below $\pt\sim 50$ GeV is due to the $\pt>15$ GeV requirement made on the reconstructed and truth jets. The requirement on the truth jets in combination with the width of the \ptRes, shown in Figure~\ref{fig:deltaTarget}, results in insufficient information being available to transform truth-level jet \pt s to reconstruction-level jet \pt s.
-% Finally, only truth-reco jet pairs for which the truth jet has $\pt>60$ GeV are selected to move away from the $\pt>15$ GeV bound applied during the generation of the sample.
+The event samples used in this paper, before and after the fast simulation, are available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth-level jets to detector-level jets and only for \pt\ was performed, however the methodology should be object and parameter agnostic. Only truth jets which have been matched to a reconstructed Delphes jet are used. For the matching criteria the reconstructed jet that has the smallest $\Delta R=\sqrt{\Delta\phi^2+\Delta\eta^2}$, where $\Delta\phi=\phi^{\text{truth}}-\phi^{\text{reco}}$ and $\Delta\eta=\eta^{\text{truth}}-\eta^{\text{reco}}$, with respect to the truth jet is chosen. If this minimum $\Delta R$ is greater than 0.2, the truth-level jet is discarded. No other requirements are made on truth on reconstructed Delphes jets other than the $\pt>15$ GeV requirement made by Delphes. Only matched jets are used for this study since the aim of the study is to test whether an NN can changes in detector resolution as a function of kinematic properties of the jet (e.g. $\pt$, $\eta$, $\phi$, $m$). 
 The final number of training jets used is two million while 500,000 jets were used as a testing sample.  
 
 The distributions of quantities used as the input for the NN, \pt, $\eta$\, $\phi$, $m$, are shown in Figure~\ref{fig:nnInputsPrescaling}.
@@ -186,7 +202,8 @@ are within the 1$^{\mathrm{st}}$ and 99$^{\mathrm{th}}$ percentile of the \ptRes
 
 \section{Neural network structures}
 
-An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10 using the Adam~\cite{adam} optimizer with a learning rate of 0.0001. The NN is implemented using Keras~\cite{chollet2015keras} with a TensorFlow~\cite{tensorflow2015-whitepaper} backend.
+An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10 using the Adam~\cite{adam} optimizer with a learning rate of $1\times10^{-4}$. The NN is implemented using Keras~\cite{chollet2015keras} with a TensorFlow~\cite{tensorflow2015-whitepaper} backend.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 \section{Results}
@@ -231,8 +248,16 @@ To test whether the NN learned correlations between input parameters and the \pt
   \label{fig:nnRes}
 \end{figure}
 
-\section{Hyperparameter scan}
+\section{Hyperparameter optimization}
+In order to acquire the optimal performance with an NN with a minimal amount of parameters, a genetic algorithm (GA) was used to optimize the NN hyperparameters. Hyper parametrization, that is, the determination of the optimal parameters associated with a complex NN (number of layers, number of neurons on each layer, choice of the learning rate, mini-batch size), is a challenging optimization problem in a high dimensionality space, especially for nonlinear NNs. Ultimately, the range of hyperparameter values that must be explored grows dramatically as the complexity of the deep NN increases. To address this challenge, we have used a (GA), which is an evolutionary algorithm that mimics the process of natural selection. Previously successful applications of the GA in similar contexts include the determination of the parameters of a complex force field~\cite{doi:10.1021/acs.jctc.7b00521,doi:10.1021/acs.jctc.6b00432}. 
+A flowchart of the ML/GA optimization protocol is depicted in Fig.~\ref{fig:hyperFlow}. The optimization starts with a set of parent parameters, which is defined as the population. For hyperparameter optimization of the NN, the parents sets are number of layers, number of neurons on each layer, choice of the learning rate or mini-batch size. Some of the individuals in this population present a better fit, which in the context of NNs means a higher value for the accuracy of the network. Fit parents survive and are allowed to mate, which is accomplished by crossing patterns with other fit individuals. During crossover, random mutations in the genes are also allowed, to a certain degree, to avoid a stagnant gene pool and a better sampling of the parameters space. The offspring individuals form the next generation of parents and this process continues until some predefined criteria are met. Sets of parameters are then ranked in ascending order. After the ranking, a nonlinear roulette wheel selection\cite{DBLP:journals/corr/abs-1109-3627} was performed to select the best 60\% members, that is, the ones with lowest values of accuracy, which were then subjected to genetic operations: mutation and crossover with a 3\% crossover rate. These mutations introduce sufficient diversity into the population, and the nonlinear selection scheme helps to avoid premature convergence of the ML/GA run. After the genetic operations, both the parent and offspring sets of parameters are ranked by their value of accuracy. The best hyperparameter sets are then chosen to constitute the next generation. Such an optimization routine ensures that only satisfactory hyperparameter sets survive after each generation; upon repeating this workflow for sufficient generations and sampling viable regions in the parameter space, we performed three separate ML/GA runs starting with different random populations. From each of the converged ML/GA run, we chose the final hyperparameter set corresponding the highest value of accuracy. 
 
+
+\begin{figure}[htb]
+  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/hyperparam.pdf}}
+  \caption{Flow chart of the hyperparameter optimization used to optimize the resolution NN.}
+  \label{fig:hyperFlow}
+\end{figure}
 
 \section{Conclusion}
 
