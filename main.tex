@@ -53,10 +53,10 @@
 \newcommand{\pythia}{{\sc Pythia8}\xspace}
 
 \def\pt{\ensuremath{p_{\mathrm{T}}}}
-\def\ptRes{\ensuremath{\pt^{\mathrm{truth}}-\pt^{\mathrm{reco}}}}
-\def\etaRes{\ensuremath{\eta^{\mathrm{truth}}-\eta^{\mathrm{reco}}}}
-\def\phiRes{\ensuremath{\phi^{\mathrm{truth}}-\phi^{\mathrm{reco}}}}
-\def\mRes{\ensuremath{m^{\mathrm{truth}}-m^{\mathrm{reco}}}}
+\def\ptRes{\ensuremath{(\pt^{\mathrm{reco}}-\pt^{\mathrm{truth}})/\pt^{\mathrm{truth}}}}
+\def\etaRes{\ensuremath{(\eta^{\mathrm{reco}}-\eta^{\mathrm{truth}})/\eta^{\mathrm{truth}}}}
+\def\phiRes{\ensuremath{(\phi^{\mathrm{reco}}-\phi^{\mathrm{truth}})/\phi^{\mathrm{truth}}}}
+\def\mRes{\ensuremath{(m^{\mathrm{reco}}-m^{\mathrm{truth}})/m^{\mathrm{truth}}}}
 \def\deltaRecoTruth{\ensuremath{\Delta(\mathrm{reco},\mathrm{truth})}}
 
   
@@ -202,7 +202,7 @@ are within the 1$^{\mathrm{st}}$ and 99$^{\mathrm{th}}$ percentile of the \ptRes
 
 \section{Neural network structures}
 
-An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 10 epochs with batch size 10 using the Adam~\cite{adam} optimizer with a learning rate of $1\times10^{-4}$. The NN is implemented using Keras~\cite{chollet2015keras} with a TensorFlow~\cite{tensorflow2015-whitepaper} backend.
+An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and $m$, and consist of five layers with 100 nodes each and with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes with a softmax activation function. Finally, the NN is trained over 1000 epochs with batch size 1000 using the Adam~\cite{adam} optimizer with a learning rate of $1\times10^{-4}$. The NN is implemented using Keras~\cite{chollet2015keras} with a TensorFlow~\cite{tensorflow2015-whitepaper} backend.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
@@ -212,37 +212,18 @@ An NN is trained with four input parameters, the scaled \pt, $\eta$, $\phi$, and
 After the NN has been trained to learn the PDF of \ptRes, the resulting learned PDF is compared to the Delphes PDF using the testing sample in Fig.~\ref{fig:PDFComp}. Good agreement is observed between the Delphes and NN PDFs, showing that the NN has learned the bulk distribution.
 
 \begin{figure}[htb]
-  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTRes_batchSize10.eps}}
-  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/nnOutput_pT_batchSize10.eps}}
+  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTRes_batchSize1000_epochs1000.eps}}
+  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/nnOutput_pT_batchSize1000_epochs1000.eps}}
   \caption{NN-generated jet \ptRes\ compared to detector-level jet \ptRes\ (a). NN-generated jet PDFs for three randomly selected truth-level jets (b).}
   \label{fig:pdfComp}
 \end{figure}
 
 The NN predicts a PDF for each jet based on its input parameters (i.e. \pt, $\phi$, $\eta$, and $m$). The PDFs for a set of randomly selected jets are shown in Fig.~\ref{fig:pdfComp}. These PDFs are then randomly sampled to produce a NN jet that mimic the detector-level jet. A comparison of the NN-generated and Delphes jet \pt\ distributions for the testing sample and for NNs trained with batch sizes 10000, 1000, 10, and 5 are shown in Fig.~\ref{fig:nnVsDelphes} while a the distributions at lower \pt\ are shown in Fig.~\ref{fig:nnVsDelphesZoom}. The NN reproduces the jet \pt\ distribution of Delphes within 5\% for reconstructed jets with $\pt>20$ GeV for all batch size less than 100. 
 
-\begin{figure}[htb]
-  \subfigure[ batch size = 1000]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize1000_log.eps}}
-  \subfigure[ batch size = 100]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize1000_log.eps}}\\
-  \subfigure[ batch size = 10]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize10_log.eps}}
-  \subfigure[ batch size = 5]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_test_batchSize5_log.eps}}
-  \caption{NN-generated jet \pt\ distribution compared to truth-level and detector-level jet \pt\ distributions for batch sizes 10000 (a), 1000 (b), 10 (c), and 5 (d). }
-  \label{fig:nnVsDelphes}
-\end{figure}
-
-
-\begin{figure}[htb]
-  \subfigure[ batch size = 1000]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_zoom_test_batchSize10000.eps}}
-  \subfigure[ batch size = 100]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_zoom_test_batchSize1000.eps}}\\
-  \subfigure[ batch size = 10]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_zoom_test_batchSize10.eps}}
-  \subfigure[ batch size = 5]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pT_genVsReco_origScale_zoom_test_batchSize5.eps}}
-  \caption{NN-generated jet \pt\ compared to truth-level and detector-level jet \pt\ distributions for batch sizes 10000 (a), 1000 (b), 10 (c), and 5 (d). }
-  \label{fig:nnVsDelphesZoom}
-\end{figure}
-
 To test whether the NN learned correlations between input parameters and the \pt\ resolution, defined as $\frac{\ptRes}{\pt^{\text{truth}}}$, the jets were divided into central ($|\eta|<3.2$) and forward ($|\eta|>3.2$) jets, then the \pt\ resolution is compared between the two regions for both the Delphes jets as well as the NN-generated jets. These two regions in the detector simulation have different calorimeter resolutions which results in different jet \pt\ resolutions and thus the \pt\ resolution is correlated with $|\eta|$. The resulting resolutions for both regions and for the training samples and jets are shown in Fig.~\ref{fig:nnRes}. To quantify how the training batch size affects the NNs ability to reproduce the resolution of the forward region, which has significantly lower statistics and is a small subsample of the total training sample, the two-sample Kolmogorov–Smirnov statistic was calculated for NN and Delphes \pt\ resolution distribution for both the central and forward regions. The training sample was chosen for these tests because it had significantly more jets and due the low number of jets that have $|\eta|>3.2$, as can be seen in Fig.~\ref{fig:nnInputsPrescaling}. The NN clearly performs better for the rare subsample (the forward region) when trained on smaller batch sizes but the NN performs worse for batch size of five.
 
 \begin{figure}[htb]
-  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTResEta_batchSize10.eps}}
+  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTResEta_batchSize1000_epochs1000.eps}}
   \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/ks.eps}}
   \caption{Resolutions for the jet \pt\ (a) for the training sample for both the central and forward region using a batch size of 10 during the training of the model. The KS statistic for NN and Delphes resolutions as a function of batch size (b) is also shown. The red dots show the KS statistic for the central region while the black dots show the KS statistic for the forward region. }
   \label{fig:nnRes}
