@@ -132,7 +132,7 @@ As a first step towards parameterized detector simulations with ML, it is instru
 
 \section{Traditional parameterized fast simulations}
 
-In abstract terms, a typical variable $\xi_id^r$ that characterizes a particle/jet, such as transverse momentum (\pt) or pseudorapidity ($\eta$), can be viewed as a multivariate transform, $F$, of the original variable $\xi_1^t$ at truth-level:
+In abstract terms, a typical variable $\xi_i^{\mathrm{reco}}$ that characterizes a particle/jet, such as transverse momentum (\pt) or pseudorapidity ($\eta$), can be viewed as a multivariate transform, $F$, of the original variable $\xi_1^t$ at truth-level:
 
 $$
 \xi_1^r = F (\xi_1^t, \xi_2^t, \xi_3^t, ...\xi_N^t).
@@ -151,7 +151,7 @@ To test the viability of using ML to transform truth objects to reco objects, we
 is an array of nodes that represent the binned probability density function (PDF) of the resolution for a single variable (such as jet \pt). Additional input variables could be any variable that can influence the resolution of a jet, such as jet flavor at the truth level, jet radius, etc. Figure~\ref{ann_example} shows a schematic representation of the NN architecture for modelling detector response for a single output variable. The aim is to have the NN learn the shape of the resolution PDF, for example for the $\pt$, depending on other input variables such as the $\eta$ of the object. A binned output (multi-categorization) was used to so that the precision of resolution PDF modelling can be selected.
 
 \begin{figure}[h]
-  \includegraphics[width=0.8\textwidth]{figures/intro/nn_example.png}
+  \includegraphics[width=0.8\textwidth]{figures/intro/nn_example.pdf}
   \caption{A schematic representation of the NN architecture for modelling the detector response and affect of reconstruction algorithms on truth-level input variables. The output of this NN is a PDF for the resolution of single variable, e.g. \ptRes.}
   \label{ann_example}
 \end{figure}
@@ -162,7 +162,7 @@ is an array of nodes that represent the binned probability density function (PDF
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 Monte Carlo events used for this analysis were produced using the Madgraph generator~\cite{Alwall:2014hca}. The simulated processes are a combination of equal parts top pair production ($t\bar{t}$+jets) and photons produced in association with jets ($\gamma$+jets), which give a high rate of jets in different environments. 
-Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{Fastjet} using the anti-$k_T$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.4. The detector simulation was performed with the Delphes package with a detector geometry which is similar to the ATLAS geometry. 
+Hadronic jets were reconstructed with the {\sc FastJet} package~\cite{Fastjet} using the anti-$k_t$ algorithm \cite{Cacciari:2008gp} with a distance parameter of 0.4. The detector simulation was performed with the Delphes package with a detector geometry which is similar to the ATLAS geometry. 
 The event samples used in this paper, before and after the fast simulation, are available from the HepSim database~\cite{Chekanov:2014fga}. In this paper only the transformation from truth jets (which have truth particle constituents) to reconstructed jets (which calorimeter cell constituent) and only for \pt\ was performed, however the methodology should be object and parameter agnostic. Truth jets which were matched to a reconstructed Delphes jet are used. For the matching criteria the reconstructed jet that has the smallest $\Delta R=\sqrt{\Delta\phi^2+\Delta\eta^2}$, where $\Delta\phi=\phi^{\text{truth}}-\phi^{\text{reco}}$ and $\Delta\eta=\eta^{\text{truth}}-\eta^{\text{reco}}$, with respect to the truth jet is chosen. If this minimum $\Delta R$ is greater than 0.2, the truth jet is discarded. No other requirements are made on truth and reconstructed Delphes jets other than the $\pt>15$ GeV requirement made by Delphes. Only matched jets are used for this study since the aim of the study is to test whether an NN can changes in detector resolution as a function of kinematic properties of the jet (e.g. $\pt$, $\eta$, $\phi$, $m$). 
 The final number of training jets used is two million while 500,000 jets were used as a testing sample. The distributions of quantities used as the input for the NN, \pt, $\eta$\, $\phi$, $m$, are shown in Figure~\ref{fig:nnInputsPrescaling}.
 
@@ -216,12 +216,12 @@ The NN predicts a PDF for each jet based on its input parameters (i.e. \pt, $\ph
 To test whether the NN learned correlations between input parameters and the \pt\ resolution, the jets were divided into central ($|\eta|<3.2$) and forward ($|\eta|>3.2$) jets. The \pt\ resolution is then compared between the two regions for both the Delphes jets as well as the NN-generated jets. These two regions in the detector simulation have different calorimeter resolutions which results in different jet \pt\ resolutions and thus the \pt\ resolution is correlated with $|\eta|$. The resulting resolutions for both regions are shown in Fig.~\ref{fig:nnRes} using the training sample. The training sample was chosen for this comparison because forward jets make up a small subsample of all jets, as can be seen in Fig.~\ref{fig:nnInputsPrescaling}. Several batch-size and number-of-epoch combinations were used in an attempt to optimize the sensitivity to a small subsample (the forward jets) of the training sample. The number of backpropagations ($N_{bp}$) were held constant by keeping the ratio of the number of epochs ($N_e$) and batch size ($N_b$) constant since $N_{bp}=\frac{N_t}{N_b}N_e$ where $N_t$ is the number of training jets. Batch size and number of epochs of 5, 10, 20, 100, 200, 1000 were tested resulting in similar performance of the NN in both the central and forward region.
 
 \begin{figure}[htb]
-  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTResEta_batchSize1000_epochs1000.eps}}
+  \includegraphics[width=0.48\textwidth]{figures/nn/jet_pTResEta_batchSize1000_epochs1000.eps}
   \caption{Jet \pt\ resolution for the training sample for both the central and forward region. }
   \label{fig:nnRes}
 \end{figure}
 
-To test whether what the NN learned is sample independent we applied the NN to a top pair production in association with a $W$ boson ($t\bar{t}+W$) sample which contained 900,000 jets. This sample is expected to have lower \pt\ jets in general but a higher fraction of high \pt\ jets that contain $b$-quarks ($b$-jets). The \pt\ distributions over two \pt\ ranges are shown in Fig.~\ref{fig:pTNNVsDelphes_ttW} while the comparison between the central and forward jet \pt\ resolutions can be seen in Fig.~\ref{fig:nnRes_ttW}. The agreement in Fig.~\ref{fig:pTNNVsDelphes_ttW} is good for jets with $\pt<200$ GeV but a mismodeling trend appears at \pt s greater than 200 GeV. We expect this to be due high \pt\ $b$-jets which are not as prevalent in the training set where the high \pt\ jets mainly come from the $\gamma$+jets sample which is produced to have a flattened \pt\ spectrum. For future studies and refinements one could add truth $b$-quark information to help improve the modelling of these types of jets.  
+To test whether what the NN learned is sample independent we applied the NN to a top pair production in association with a $W$ boson ($t\bar{t}+W$) sample which contained 900,000 jets. This sample is expected to have higher jet multiplicities per event. The \pt\ distributions over two \pt\ ranges are shown in Fig.~\ref{fig:pTNNVsDelphes_ttW} while the comparison between the central and forward jet \pt\ resolutions can be seen in Fig.~\ref{fig:nnRes_ttW}. The agreement in Fig.~\ref{fig:pTNNVsDelphes_ttW} is good for jets with $\pt<200$ GeV but a mismodeling trend appears at \pt s greater than 200 GeV. We expect this to be due high \pt\ $b$-jets which are not as prevalent in the training set where the high \pt\ jets mainly come from the $\gamma$+jets sample which is produced to have a flattened \pt\ spectrum. For future studies and refinements one could add truth $b$-quark information to help improve the modelling of these types of jets.  
 
 
 \begin{figure}[htb]
@@ -233,7 +233,7 @@ To test whether what the NN learned is sample independent we applied the NN to a
 
 
 \begin{figure}[htb]
-  \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/ttW/jet_pTResEta_batchSize1000_epochs1000.eps}}
+  \includegraphics[width=0.48\textwidth]{figures/nn/ttW/jet_pTResEta_batchSize1000_epochs1000.eps}
   \caption{Jet \pt\ resolution for the training sample for both the central and forward region for jets originating from $t\bar{t}+W$ production.}
   \label{fig:nnRes_ttW}
 \end{figure}
@@ -251,7 +251,7 @@ To test whether what the NN learned is sample independent we applied the NN to a
 
 \section{Conclusion}
 
-We have shown that a truth-level quantity can be transformed to a reconstruction-level quantity using a multi-categorizing NN. The NN learned the truth-to-reconstruction transformation without requiring manual binning to capture the differences in resolutions of particular subsamples. This method should be easily extendable to additional reconstructed quantities and could be used to model the ATLAS and CMS detector. The method described in this paper thus allows for automated detector parameterization which can facilitate phenomological studies, efficient truth event selection, and upgrade studies. Additional improvements could be made by including more information about the objects (e.g. whether a $b$-quark is present in a jet) making this method more robust. 
+We have shown that a truth-level quantity can be transformed to a reconstruction-level quantity using a multi-categorizing NN. The NN learned the truth-to-reconstruction transformation without requiring manual binning to capture the differences in resolutions of particular subsamples (central and forward jets). To ensure that this method produces realistic results, the training data needs to be carefully chosen to properly represent objects that one wants to transforms (as was shown in when the NN is applied to the $t\bar{t} W$). Additional improvements could be made by including more information about the objects (e.g. whether a $b$-quark is present in a jet, kinematic information from other objects in the event) making this method more robust. This method should be easily extendable to additional reconstructed quantities and could be used to model the ATLAS and CMS detector. The method described in this paper thus allows for automated detector parameterization which can facilitate phenomological studies, efficient truth event selection, and upgrade studies.
 
 \section*{Acknowledgments}
 The submitted manuscript has been created by UChicago Argonne, LLC, Operator of Argonne National Laboratory (“Argonne”). Argonne, a U.S.  Department of Energy Office of Science laboratory, is operated under Contract No. DE-AC02-06CH11357. The U.S. Government retains for itself, 
