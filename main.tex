@@ -129,8 +129,8 @@ With the increased complexity of high-energy collider experiments, such as those
 The main advantage of a detector parametrization based on ML, as compared to a manually-constructed analytic parametrization such as Delphes, is that a neural network can automatically learn the features introduced by detailed full simulations avoiding the need to handcraft parameters to represent resolutions and inefficiencies. An NN trained using realistic detector simulation could learn the transformation from the truth to the reco quantities without dedicated studies of resolution functions and could automatically be updated when there are changes to the detector or the reconstructions algorithms. Another advantage is that the NN approach can introduce a complex interdependence of variables which is currently difficult to implement in parameterized simulations.
 
 The organization of this paper is as follows. In Section~\ref{sec:tradMethod}, the traditional method of parametrizing detector and reconstruction effects are described. Section~\ref{sec:samples} contains a description of the samples used to train the NN. The details of the NNs structure and parameters are reported in Sections~\ref{sec:nnStructure}. Finally, the results from the trained NN are presented in Section~\ref{sec:result}.
-
 \FloatBarrier
+
 \section{Traditional parameterized fast simulations}
 \label{sec:tradMethod}
 In abstract terms, a typical variable $\xi_i^{\mathrm{reco}}$ that characterizes a reconstructed particle/jet, such as transverse momentum (\pt$^{\mathrm{reco}}$) or pseudorapidity ($\eta^{\mathrm{reco}}$), can be viewed as the result of a multivariate transform, $F$, of the original variable $\xi_1^{\mathrm{truth}}$ at truth level:
