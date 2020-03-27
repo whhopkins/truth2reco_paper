@@ -224,7 +224,7 @@ To test whether the NN learned correlations between input parameters and the \pt
   \label{fig:nnRes}
 \end{figure}
 
-The mean and standard deviation of the resolution (demonstrated in Figure~\ref{fig:PDFComp}) as a function of \pt\ is shown in Figure~\ref{fig:resVsPt}. The mean of the resolution for the NN is systematically higher than the resolution for Delphes but this effect is small when considering the width of the resolution. The standard deviation of the resolutions, however, are the same for the NN and Delphes across the \pt\ range showing that the NN accurately predicts the resolutions for a large range in \pt. 
+The mean and standard deviation of the resolution (demonstrated in Figure~\ref{fig:PDFComp}) as a function of \pt\ is shown in Figure~\ref{fig:resVsPt}. The mean of the resolution for the NN is systematically higher than the resolution for Delphes. This difference between the means has a small effect on truth-to-reco transformation due to its small size relative to the width of the resolution. The standard deviation of the resolutions, however, are the same for the NN and Delphes across the \pt\ range showing that the NN accurately predicts the resolutions for a large range in \pt. 
 
 \begin{figure}[htb]
   \subfigure[]{\includegraphics[width=0.49\textwidth]{figures/nn/jet_pTRes_batchSize1000_epochs1000_nCats400_mean.eps}}
@@ -232,8 +232,8 @@ The mean and standard deviation of the resolution (demonstrated in Figure~\ref{f
   \caption{The mean (a) and standard deviation of the jet \pt\ resolution for Delphes and NN-generated as a function truth jet \pt.}
   \label{fig:resVsPt}
 \end{figure}
-
-In order to produce an NN with optimal performance and a minimal amount of parameters, a genetic algorithm (GA) is used to optimize the NN hyperparameters. The number of layers, number of neurons in each layer, and choice of the learning rate are scanned to find the optimal configuration. The GA we utilize is an evolutionary algorithm that mimics the process of natural selection and which was previously used in the determination of the parameters of a complex force field~\cite{doi:10.1021/acs.jctc.7b00521,doi:10.1021/acs.jctc.6b00432}. Due to the small scale of our problem, the initial configuration was found to be equivalent to the optimal configuration found by the GA.
+% Need to read this to make sure it reads well. 
+In order to produce an NN with optimal performance and a minimal amount of parameters, a genetic algorithm (GA) is used to optimize the NN hyperparameters. GAs are commonly used for NN hyperparameter optimizations~\cite{NIPS2011_4443} but are not commonly used in high energy physics. The number of layers, number of neurons in each layer, and choice of the learning rate are scanned to find the optimal configuration. The GA utilized is an evolutionary algorithm that mimics the process of natural selection and which was previously used in the determination of the parameters of a complex force field~\cite{doi:10.1021/acs.jctc.7b00521,doi:10.1021/acs.jctc.6b00432}. During the optimization, the sets of parameters are ranked by their value of categorical accuracy. The final set of parameters selected by the GA had similar performance to the initial configuration. This is expected due to the small scale of our problem and because Delphes using Gaussian approximations of the resolution functions. The GA is tested in this scenario to prepare it for future studies where an NN will be optimized to learn non-linear and non-gaussian resolution functions typically seen in Geant4 simulations. 
 
 \section{Conclusion}
 % Rewrite first sentence to be impersonal just as the remainder of the document
