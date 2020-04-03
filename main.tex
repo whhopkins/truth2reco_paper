@@ -73,7 +73,7 @@
 % \journal{Phys. Lett. B} 
 \begin{document}
 
-\preprint{ANL-HEP-XXXXX}
+\preprint{ANL-HEP-158616}
 
 % \hfill \today
 
@@ -122,7 +122,7 @@ Rapidly applying the effects of detector response to physics objects (e.g. elect
 
 \section{Introduction}
 \label{sec:intro}
-A cornerstone of particle collision experiments is the Monte Carlo (MC) simulation of physics processes resulting from collisions of high-energy particles, followed by the simulation of detector responses and object reconstruction. The MC simulation produces final-state particles (hadrons, leptons, photons) with properties (four momenta, flavor) which entirely depend on the physics processes occurring. These particles, as well as more complex derived objects (such as jets), are commonly referred to as ``truth'' objects. These objects are altered by interactions with the detector and are reconstructed with experimental algorithms. Such objects, that have undergone a transformation due to detector interactions and reconstruction will be referred to as ``reco'' objects in this paper.
+A cornerstone of particle collision experiments is the Monte Carlo (MC) simulation of physics processes resulting from collisions of high-energy particles, followed by the simulation of detector responses and object reconstruction. The MC simulation produces final-state particles (hadrons, leptons, photons) with properties (four momenta, flavor) which entirely depend on the physics processes occurring. These particles, as well as more complex derived objects (such as jets), are commonly referred to as ``truth'' objects. These objects are altered by interactions with the detector and are reconstructed with experimental algorithms. Such objects, that have undergone a transformation due to detector interactions and reconstruction, will be referred to as ``reco'' objects in this paper.
 
 With the increased complexity of high-energy collider experiments, such as those at the Large Hadron Collider (LHC), the detector simulations become increasing complex and time consuming. Parameterized detector simulations, such as Delphes~\cite{deFavereau:2013fsa}, have been proven to be a vital tool for physics performance and phenomological studies (i.e. to estimate the sensitivity of an experiment to a new physics model). Producing an approximation of the detector in Delphes is a laborious process as developers must manually define resolution functions based on additional studies that involve analyses of experimental data or complex detector simulations used by experiments. An approximation of the detector responses and experimental object reconstruction can, however, also be performed with machine learning (ML) by training a neural network (NN) using the Geant4-based simulations that have gone through an experiment's reconstruction algorithm. Such an NN could then automatically learn the transformation functions from truth MC objects (jets and particles) to objects modified by a detector and experimental reconstruction algorithms. 
 
@@ -138,9 +138,9 @@ In abstract terms, a typical variable $\xi_i^{\mathrm{reco}}$ that characterizes
 $$
 \xi_1^{\mathrm{reco}} = F (\xi_1^{\mathrm{truth}}, \xi_2^{\mathrm{truth}}, \xi_3^{\mathrm{truth}}, ...\xi_{\mathrm{N}}^{\mathrm{truth}}).
 $$
-Generally, such a transform  depends on several other variables $\xi_2^{\mathrm{truth}}$ ..  $\xi_{\mathrm{N}}^{\mathrm{truth}}$ characterizing this (or other) objects at truth level. For example, the extent at which jet transverse momentum, \pt\ is modified by a detector depends on the original truth-level transverse momentum ($\xi_1^{\mathrm{truth}}=p_T^{\mathrm{truth}}$), pseudorapidity ($\xi_2^{\mathrm{truth}}=\eta^{\mathrm{truth}}$), and other effects that can be inferred from truth quantities. Similarly, if particular detector regions in the azimuthal angle ($\phi$) have low efficiency, this would introduce an additional dependence of this transform on $\phi$.
+Generally, such a transform  depends on several other variables $\xi_2^{\mathrm{truth}}$ ..  $\xi_{\mathrm{N}}^{\mathrm{truth}}$ characterizing this (or other) objects at truth level. For example, the extent at which jet transverse momentum, \pt, is modified by a detector depends on the original truth-level transverse momentum ($\xi_1^{\mathrm{truth}}=p_T^{\mathrm{truth}}$), pseudorapidity ($\xi_2^{\mathrm{truth}}=\eta^{\mathrm{truth}}$), and other effects that can be inferred from truth quantities. Similarly, if particular detector regions in the azimuthal angle ($\phi$) have low efficiency, this would introduce an additional dependence of this transform on $\phi$.
 
- Typical parameterized simulations ignore the full range of correlations between the truth-level variables. In most cases, the above transform is reduced to a single variable, or two (as in the case of Delphes simulations where the energy resolution of clusters depends on the original energies of particles and their positions in $\eta$). In order to take into account correlations between multiple parameters characterizing transformations to reconstruction objects, a grid in the hypercube with the dimension $N_{\mathrm{b}}^{\mathrm{k}}$, where k=1,2,3,... is the number of correlated variables describing truth-level objects and $N_{\mathrm{b}}$ is the number of histogram bins for the distributions \genRes, representing the ``resolution'', must be created. This methodology results in a large number of histograms when there are many correlated variables that affect the resolution.
+ Typical parameterized simulations ignore the full range of correlations between the truth-level variables. In most cases, the above transform is reduced to a single variable, or two (as in the case of Delphes simulations where the energy resolution of clusters depends on the original energies of particles and their positions in $\eta$). In order to take into account correlations between multiple parameters characterizing transformations to reconstruction objects, a grid in the hypercube with the dimension $N_{\mathrm{b}}^{\mathrm{k}}$, where k=1,2,3,... is the number of correlated variables describing truth-level objects and $N_{\mathrm{b}}$ is the number of histogram bins for the distributions \genRes, representing the resolution, must be created. This methodology results in a large number of histograms when there are many correlated variables that affect the resolution.
 
 It should be pointed out that the calculation speed for parameterized simulations of one variable that depends on $N$ other variables at the truth level is proportional to $N_{\mathrm{b}}^{\mathrm{k}}$ since each object at the truth level should be placed inside the grid defined by $N_{\mathrm{b}}$ bins. Therefore, complex parameterisations of resolutions and efficiencies for $N>2$ becomes computationally intensive. 
 
@@ -179,11 +179,11 @@ is an array of nodes that represent the binned probability density function (PDF
 
 \begin{figure}[h]
   \includegraphics[width=0.8\textwidth]{figures/intro/nn_example.pdf}
-  \caption{A schematic representation of the NN architecture for modelling the detector response and affect of reconstruction algorithms on truth-level input variables. The output nodes of this NN represent a binned PDF for the resolution of single variable, e.g. \ptRes, while other variables such $\eta$, $\phi$, mass ($m$) are auxiliary variables that affect \ptRes.}
+  \caption{A schematic representation of the NN architecture for modelling the detector response and effects of reconstruction algorithms on truth-level input variables. The output nodes of this NN represent a binned PDF for the resolution of single variable, e.g. \ptRes, while other variables, such as $\eta$, $\phi$, mass ($m$), are auxiliary variables that affect \ptRes.}
   \label{ann_example}
 \end{figure}
 
-As a first step towards parameterized detector simulations with ML, it is instructive to investigate how a transformation from the truth to reco objects can be performed, leaving aside the question of introducing objects that are created by misreconstructions or objects that are lost due to inefficiencies. As far as the authors are aware, this is the first attempt at using an NN to learn the transformation of truth physics objects into reco objects.
+As a first step towards parameterized detector simulations with ML, it is instructive to investigate how a transformation from the truth to reco objects can be performed, leaving aside the question of introducing objects that are created by misreconstructions or objects that are lost due to inefficiencies. As far as the authors are aware, this is the first attempt in using an NN to learn the transformation of truth physics objects into reco objects.
 
 An NN is trained with four input parameters, the scaled jet \pt, $\eta$, $\phi$, and $m$. The NN consists of five fully connected layers with 100 nodes each, with each node having a rectifier linear unit (ReLu) activation function. The output layer has 400 nodes and a softmax activation function. The NN is trained using the Adam~\cite{adam} optimizer with a learning rate of $10^{-4}$ and is implemented using Keras with a TensorFlow~\cite{tensorflow2015-whitepaper} backend. Finally, categorical cross-entropy is used as the loss function.
 
@@ -198,7 +198,7 @@ Finally, the loss function for both the training (2 million jets) and test sampl
 \section{Results}
 \label{sec:results}
 
-After the NN has been trained to learn the PDF of \ptRes, the resulting learned PDF is compared to the Delphes PDF using the test sample in Figure~\ref{fig:PDFComp}a. Good agreement is observed between the Delphes and NN PDFs, showing that the NN has learned the bulk distribution.
+After the NN has been trained to learn the PDF of \ptRes, the resulting learned PDF is compared to the Delphes PDF using the test sample in Figure~\ref{fig:PDFComp}a. Good agreement is observed between the Delphes and NN PDFs, showing that the NN has learned the shape of the distribution.
 
 \begin{figure}[htb]
   \subfigure[]{\includegraphics[width=0.48\textwidth]{figures/nn/jet_pTRes_batchSize1000_epochs1000_nCats400.eps}}
